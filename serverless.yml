@@ -1,0 +1,32 @@
+# serverless.yml
+
+service: log-forwarder
+
+plugins:
+  - serverless-dotenv-plugin
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+  stage: prod
+  region: us-east-1
+  timeout: 30
+  memorySize: 128
+  environment:
+    LOGDNA_KEY: ${env:LOGDNA_KEY}
+
+functions:
+  forwarder:
+    handler: index.handler
+
+resources:
+  Resources:
+    ForwarderLambdaPermission:
+      Type: "AWS::Lambda::Permission"
+      Properties:
+        Action: "lambda:InvokeFunction"
+        FunctionName:
+          Fn::GetAtt:
+            - ForwarderLambdaFunction
+            - Arn
+        Principal: logs.${self:provider.region}.amazonaws.com
